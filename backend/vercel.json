@@ -6,9 +6,6 @@
           "use": "@vercel/node"
       }
   ],
-  "scripts": {
-    "vercel-build": "apt-get update && apt-get install -y python3 && ln -s /usr/bin/python3 /usr/bin/python && npm install"
-  },
   "routes": [
       {
           "src": "/(.*)",
