@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "preinstall": "apt-get update && apt-get install -y python3 && ln -s /usr/bin/python3 /usr/bin/python",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
