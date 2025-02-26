@@ -15,7 +15,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 const FILE_EXPIRY_TIME = 20 * 60 * 1000; // 20 minutes in milliseconds
 
 // Store file deletion jobs so they can be canceled if needed
@@ -36,8 +36,12 @@ app.post("/get-formats", async (req, res) => {
   }
 
   try {
+    // Add cookies path to avoid YouTube bot detection
+    const cookiesPath = path.join(__dirname, "cookies.txt");
+    
     const info = await ytdlp(url, {
       dumpSingleJson: true,
+      cookies: cookiesPath,
     });
 
     // Create two separate arrays for video+audio formats and audio-only formats
@@ -131,16 +135,19 @@ app.post("/download", async (req, res) => {
   }
 
   const localFilePath = path.join(__dirname, "downloads", `${Date.now()}.mp4`);
+  // Add cookies path to avoid YouTube bot detection
+  const cookiesPath = path.join(__dirname, "cookies.txt");
 
   try {
-    // Download video using yt-dlp
+    // Download video using yt-dlp with cookies
     await ytdlp(url, {
       format: format_id,
       output: localFilePath,
       mergeOutputFormat: 'mp4',
       embedThumbnail: true,
       addMetadata: true,
-      audioQuality: 0
+      audioQuality: 0,
+      cookies: cookiesPath
     });
 
     // Read file buffer
@@ -160,10 +167,13 @@ app.post("/download", async (req, res) => {
     // Schedule file for deletion after expiry time
     scheduleFileDeletion(fileName);
 
+    // Fix the download URL to use the actual server URL instead of localhost
+    const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
+    
     // Return the download URL for the new endpoint
     res.json({ 
       success: true, 
-      downloadUrl: `http://localhost:${PORT}/download-file?filePath=${fileName}`,
+      downloadUrl: `${baseUrl}/download-file?filePath=${fileName}`,
       expiresIn: FILE_EXPIRY_TIME / 60000 // Convert ms to minutes for frontend display
     });
   } catch (error) {
@@ -222,6 +232,11 @@ process.on('SIGINT', async () => {
   }
   
   process.exit(0);
+});
+
+// Add a simple health check endpoint
+app.get("/health", (req, res) => {
+  res.json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
 app.listen(PORT, () => {
