@@ -2,8 +2,11 @@ FROM node:18
 
 WORKDIR /app
 
-# Install Python and other dependencies
+# Install Python and other dependencies BEFORE npm install
 RUN apt-get update && apt-get install -y python3 python3-pip ffmpeg
+
+# Create a symlink for python command
+RUN ln -sf /usr/bin/python3 /usr/bin/python
 
 # Copy package files
 COPY package*.json ./
