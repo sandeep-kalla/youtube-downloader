@@ -29,7 +29,7 @@ const App = () => {
     setExpiryTime(null)
 
     try {
-      const response = await axios.post('http://localhost:5000/get-formats', { url })
+      const response = await axios.post(`${import.meta.env.VITE_API}/get-formats`, { url })
       setVideoInfo(response.data)
     } catch (err) {
       setError('Failed to fetch video information. Please check the URL.')
@@ -42,7 +42,7 @@ const App = () => {
   const handleDownload = async (formatId) => {
     setDownloadLoading(true);
     try {
-      const response = await axios.post('http://localhost:5000/download', {
+      const response = await axios.post(`${import.meta.env.VITE_API}/download`, {
         url,
         format_id: formatId
       });
